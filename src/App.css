@@ -1,0 +1,64 @@
+import React, { useState, useEffect } from 'react';
+import ReactSpeedometer from "react-d3-speedometer";
+
+const Dashboard = () => {
+  const [salesData, setSalesData] = useState({
+    monthSales: 0,
+    monthTarget: 100000,
+    totalRevenue: 0,
+    revenueTarget: 1000000
+  });
+  
+  useEffect(() => {
+    // Simular dados de vendas
+    // Na implementação real, isso seria atualizado via WebSocket
+    const updateData = () => {
+      setSalesData(prevData => ({
+        ...prevData,
+        monthSales: Math.min(prevData.monthSales + 5000, prevData.monthTarget * 1.5),
+        totalRevenue: Math.min(prevData.totalRevenue + 50000, prevData.revenueTarget * 1.5)
+      }));
+    };
+    
+    const interval = setInterval(updateData, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const calculatePercentage = (value, target) => (value / target) * 100;
+
+  return (
+    <div className="dashboard" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <h1>Vendas Dashboard</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-around', width: '100%' }}>
+        <div>
+          <h2>Vendas do Mês</h2>
+          <ReactSpeedometer
+            maxValue={salesData.monthTarget * 1.5}
+            value={salesData.monthSales}
+            currentValueText={`${salesData.monthSales.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`}
+            customSegmentStops={[0, salesData.monthTarget, salesData.monthTarget * 1.5]}
+            segmentColors={['#FF5733', '#33FF57']}
+            textColor="#000000"
+          />
+          <p>Meta: {salesData.monthTarget.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
+          <p>Progresso: {calculatePercentage(salesData.monthSales, salesData.monthTarget).toFixed(2)}%</p>
+        </div>
+        <div>
+          <h2>Faturamento Total</h2>
+          <ReactSpeedometer
+            maxValue={salesData.revenueTarget * 1.5}
+            value={salesData.totalRevenue}
+            currentValueText={`${salesData.totalRevenue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`}
+            customSegmentStops={[0, salesData.revenueTarget, salesData.revenueTarget * 1.5]}
+            segmentColors={['#FF5733', '#33FF57']}
+            textColor="#000000"
+          />
+          <p>Meta: {salesData.revenueTarget.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
+          <p>Progresso: {calculatePercentage(salesData.totalRevenue, salesData.revenueTarget).toFixed(2)}%</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;
